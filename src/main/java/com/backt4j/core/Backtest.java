@@ -3,14 +3,15 @@ package com.backt4j.core;
 import com.backt4j.strategy.Strategy;
 
 /***
- * The Backtest class is the most important class of the backt4j library. Here the data and the strategy are
- * combined and a Result is produced by backtesting the strategy with the given data.
+ * <p>The {@code Backtest} class is the most important class of the {@code backt4j} library. Here the data and the strategy are
+ * combined and a Result is produced by backtesting the strategy with the given data.</p>
  * 
- * It is possible to handle different instances of an asset at once (so e.g. multiple stocks at once), however make sure,
- * that there is always an equal amount of price data for every asset available. Also keep in mind that there is no guarantee 
- * about the order prices are fed into the model at one point in time. The prices will be fed into the strategy 
- * in order of the time they occured, but it can't be ensured, that if in one round n, the price of stock A 
- * was processed after the price of stock B, that this will also be the case in round n+1.
+ * <p>It is possible to handle different instances of an asset at once (so e.g. multiple stocks at once), however make sure,
+ * that there is always an equal amount of price data for every asset available.</p>
+ * <p>Also keep in mind that there is no guarantee about the order the prices are fed into the strategy at one point in time. 
+ * The prices will be fed into the strategy in order of the time they occured, but it can't be ensured, 
+ * that if in one round {@code n}, the price of {@code stock A} was processed after the price of {@code stock B}, that this will 
+ * also be the case in round {@code n+1}.</p>
  */
 public class Backtest {
 

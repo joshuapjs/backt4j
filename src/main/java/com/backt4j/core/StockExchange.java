@@ -7,19 +7,19 @@ import java.util.List;
 import com.backt4j.data.PriceDataPoint;
 
 /***
- * The {@code StockExchange} class is a simple implementation for doing simple backtests with preferably stocks.
- * It might work with similar assets as well but it is designed for Stocks (e.g. it won't work for Options or Futures).
+ * <p>The {@code StockExchange} class is a simple implementation for doing simple backtests with preferably stocks.</p>
+ * <p>It might work with similar assets as well but it is designed for Stocks (e.g. it won't work for Options or Futures).
  * You can use it to run quick backtests for a first impression of a signal (without considreation of trading costs because
- * it would introduce way more complexity).
+ * it would introduce way more complexity).</p>
  */
 public class StockExchange extends Exchange {
 
     /***
-     * The value of the Entries in {@code openPositions} are specified as as List with two elements: 
-     * The first value is the amount of shares of the Position. It can be expected that this value is
-     * always a whole number so {@code amount.intValue()} will not result in information loss.
-     * The second value is the price the shares where bought at. This oversimplifies dramatically how transactions 
-     * work. It is therefore encouraged to adjust this in your own implementation to consider different prices.
+     * <p>The value of the Entries in {@code openPositions} are specified as as List with two elements:</p>
+     * <p>The first value is the amount of shares of the Position. It can be expected that this value is
+     * always a whole number so {@code amount.intValue()} will not result in information loss.</p>
+     * <p>The second value is the price the shares where bought at. This oversimplifies dramatically how transactions 
+     * work. It is therefore encouraged to adjust this in your own implementation to consider different prices.</p>
      */
     private HashMap<String, List<Double>> openPositions;
     /***
@@ -38,8 +38,8 @@ public class StockExchange extends Exchange {
 
 
     /***
-     * A record to track the progress of the trades being made.
-     * The amount variable will tell whether or not its meant to be a short or long trade.
+     * <p>A record to track the progress of the trades being made.</p>
+     * <p>The amount variable will tell whether or not its meant to be a short or long trade.</p>
      */
     private record Transaction(String ticker, Double amount, Double price, Integer timeStamp) {};
     private List<Transaction> transactions;
@@ -53,11 +53,11 @@ public class StockExchange extends Exchange {
     }
 
     /***
-     * Method for the Strategy object to trade with the StockExchange. 
-     * Every specified price will be granted, so no slippage is taken into account. A long position is take if the amount variable
-     * has a positive sign. Vice versa a short position can be taken by specifying an amount with a negative sign.
-     * As expected each position needs to be cleared by an order in the opposite direction. For convenience there is marketClearPosition
-     * Method to clear an open Position of a ticker.
+     * <p>Method for the {@code Strategy} object to trade with the {@code StockExchange}.</p>
+     * <p>Every specified price will be granted, so no slippage is taken into account. A long position is taken if the amount variable
+     * has a positive sign. Vice versa a short position can be taken by specifying an amount with a negative sign.</p>
+     * <p>As expected each position needs to be cleared by an order inverse to the order being made initially. For convenience there is {@code marketClearPosition}
+     * method to clear an open position of a ticker.</p>
      * 
      * @param ticker the ticker of the stock to trade.
      * @param amount is either positive or negative whether the trade should be long or short respectively.
@@ -100,9 +100,9 @@ public class StockExchange extends Exchange {
     }
 
     /***
-     * This method can be used to clear out an open position. It is always called by marketOrder in case an order clears out 
-     * a position either by buying/selling the exact open amount of shares or an amount that would make the whole position from e.g.
-     * long into a short position (and by that clearing the position and creating a new opposite position).
+     * <p>This method can be used to clear out an open position.</p>
+     * <p>It is always called by {@code marketOrder} in case an order clears a position by buying/selling the exact open amount of shares
+     * <b>or</b> an amount that would make the whole position from e.g. long into a short position (and by that clearing the position and creating a new opposite position).</p>
      * 
      * @param ticker the ticker specifies the stock being traded.
      */

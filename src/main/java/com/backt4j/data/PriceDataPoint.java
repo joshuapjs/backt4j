@@ -3,9 +3,9 @@ package com.backt4j.data;
 import java.util.Date;
 
 /***
- * A Data Record representing a single data point in a time series.
+ * <p>A Data Record representing a single data point in a time series.</p>
  * 
- * ticker volume open close high low window_start transactions
+ * <p>ticker volume open close high low window_start transactions</p>
  * 
  * @param id Given id of the asset.
  * @param volume Traded volume of the asset.

@@ -13,21 +13,21 @@ import java.lang.Exception;
 import com.opencsv.CSVReader;
 
 /***
- * A Class for parsing price data for each a Flat Files with time series data for stocks.
- * This class follows the Polygon.io Flat Files data format, with the following header:
+ * <p>A Class for parsing price data for each a Flat Files with time series data for stocks.
+ * This class follows the Polygon.io Flat Files data format, with the following header:</p>
  * 
- * ticker volume open close high low window_start transactions
+ * <p>ticker volume open close high low window_start transactions</p>
  * 
- * The Data is stored in a HashMap, where we have for each stock a List of DataPoint records.
- * Each DataPoint has a price and a timeStamp in this implementation.
- * Currently all data for one Exchange must be in one file.
+ * <p>The Data is stored in a HashMap, where we have for each stock a List of DataPoint records.</p>
+ * <p>Each DataPoint has a price and a timeStamp in this implementation.</p>
+ * <p>Currently all data for one Exchange must be in one file.</p>
  * 
- * CAUTION:
- * The class expects the Data to be well formatted. 
+ * <p><b>CAUTION:</b></p>
+ * <p>The class expects the Data to be well formatted. 
  * This means each stock must have the exact same amount of DataPoints.
- * Beyond that make sure that elements are already sorted in the way the Strategy should be tested on them.
+ * Beyond that make sure that elements are already sorted in the way the Strategy should be tested on them.</p>
  * 
- * The parsing of the CSV data starts with the init() Method.
+ * <p>The parsing of the CSV data starts with the init() Method.</p>
  */
 public class CSVData implements Data {
     

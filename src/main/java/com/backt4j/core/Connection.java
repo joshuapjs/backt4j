@@ -4,6 +4,9 @@ import java.util.List;
 
 import com.backt4j.strategy.Strategy;
 
+/***
+ * Connects instances of {@link Strategy} and {@link Exchange}.
+ */
 public class Connection {
 
     private List<Exchange> exchanges;
