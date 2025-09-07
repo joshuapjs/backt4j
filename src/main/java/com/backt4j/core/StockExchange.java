@@ -41,7 +41,7 @@ public class StockExchange extends Exchange {
      * <p>A record to track the progress of the trades being made.</p>
      * <p>The amount variable will tell whether or not its meant to be a short or long trade.</p>
      */
-    private record Transaction(String ticker, Double amount, Double price, Integer timeStamp) {};
+    private record Transaction(String ticker, Double amount, Double price, Long timeStamp) {};
     private List<Transaction> transactions;
     private List<Results> resultsSeries;
 
@@ -65,7 +65,7 @@ public class StockExchange extends Exchange {
      * @param timeStamp the timestamp of the price from the current PriceDataPoint.
      * @return if successfull returns 0, if not 1 is returned. A trade is unsuccessfull if there is not enough budget to make it.
      */
-    public int marketOrder(String ticker, Double amount, Double price, Integer timeStamp) {
+    public int marketOrder(String ticker, Double amount, Double price, Long timeStamp) {
         if (amount * price * -1 + currentAccountValue < 0) {
             return 1;
         }
