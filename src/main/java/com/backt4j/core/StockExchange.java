@@ -143,17 +143,17 @@ public class StockExchange extends Exchange {
     }
 
     @Override
-    public Double getAccountValue() {
+    public Double getInitialBudget() {
         return accountValue;
     }
 
     @Override
-    public Double getCurrentAccountValue() {
+    public Double getCurrentPortfolioValue() {
         return currentAccountValue;
     }
 
     @Override
-    public Result getResults() {
+    public Result getResult() {
         return results;
     }
 

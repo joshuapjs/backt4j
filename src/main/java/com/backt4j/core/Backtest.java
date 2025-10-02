@@ -8,8 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 
 /***
- * <p>The {@code Backtest} class is the most important class of the {@code backt4j} library. Here the data and the strategy are
- * combined and a Result is produced by backtesting the strategy with the given data.</p>
+ * <p>The {@code Backtest} class is the most important class of the {@code backt4j} framework. It links Strategy and Exchange and
+ *  it prodices a Result by backtesting the Strategy on the given Exchange.</p>
  * 
  * <p>It is possible to handle different instances of an asset at once (so e.g. multiple stocks at once), however make sure,
  * that there is always an equal amount of price data for every asset available.</p>
@@ -119,7 +119,7 @@ public class Backtest {
 
             List<Exchange> exchangesList = connection.getExchanges();
             for (Exchange connectionExchange : exchangesList) {
-                results = connectionExchange.getResults();
+                results = connectionExchange.getResult();
 
                 System.out.println("\n");
                 System.out.println("Results of the Backtest");

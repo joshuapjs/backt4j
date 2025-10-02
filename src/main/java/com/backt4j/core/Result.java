@@ -92,7 +92,7 @@ public class Result {
         return volatility;
     }
 
-    public void setVolatility(Double volatility) {
+    void setVolatility(Double volatility) {
         this.volatility = volatility;
     }
 

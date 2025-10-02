@@ -1,9 +1,0 @@
-TODO handle how volatility is calculated in Backtest - if aggregation of Results becomes suddenly possible because Exchange provides performance values implement that.
-TODO add Sharpe Ratio to Results class
-TODO add Sortino Ratio to Resuls class
-TODO add Profit Factor to Results class
-TODO add Win-Rate to Results class
-TODO Review all Documentation if Changes are accurately reflected.
-TODO finish README.md
-TODO add protocol to specify trading costs.
-TODO Python Script für data cleaning schreiben
