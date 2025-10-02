@@ -1,20 +1,37 @@
 package com.backt4j.core;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.backt4j.strategy.Strategy;
 
 /***
- * Connects instances of {@link Strategy} and {@link Exchange}.
+ * Connects instances of {@link Exchange} with a {@link Strategy}.
  */
 public class Connection {
 
     private List<Exchange> exchanges;
-    private List<Strategy> strategies;
+    private Strategy strategy;
 
-    public Connection(List<Exchange> exchangesList, List<Strategy> strategiesList) {
+    public Connection(Exchange exchange, Strategy aStrategy) {
+        List<Exchange> tmpExchanges = new ArrayList<>();
+        exchanges.add(exchange);
+        exchanges = tmpExchanges;
+
+        strategy = aStrategy;
+    }
+
+    public Connection(List<Exchange> exchangesList, Strategy aStrategy) {
         exchanges = exchangesList;
-        strategies = strategiesList;
+        strategy = aStrategy;
+    }
+
+    public void add(Exchange exchange) {
+        exchanges.add(exchange);
+    }
+
+    public void pop() {
+        exchanges.remove(exchanges.size() - 1);
     }
 
     public List<Exchange> getExchanges() {
@@ -25,12 +42,12 @@ public class Connection {
         this.exchanges = exchanges;
     }
 
-    public List<Strategy> getStrategies() {
-        return strategies;
+    public Strategy getStrategy() {
+        return strategy;
     }
 
-    public void setStrategies(List<Strategy> strategies) {
-        this.strategies = strategies;
+    public void setStrategy(Strategy aStrategy) {
+        this.strategy = aStrategy;
     }
     
 }

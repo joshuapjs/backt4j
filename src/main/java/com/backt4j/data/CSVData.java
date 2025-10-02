@@ -1,14 +1,16 @@
 package com.backt4j.data;
+import java.io.File;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Date;
-import java.lang.Exception;
+import java.util.stream.Collector;
+import java.util.stream.Stream;
 
 import com.opencsv.CSVReader;
 
@@ -33,18 +35,14 @@ public class CSVData implements Data {
     
     public String Id;  // E.g. Date the Data was collected.
     public Integer size;
-    public Date minDate;  
-    public Date maxDate;
 
     /***
      * HashMap containing all the parsed financial data. Each asset receives its assigned List
      * of Data Records.
      */
-    public HashMap<String, List<DataPoint>> values;
+    private HashMap<String, List<DataPoint>> values;
 
-    public CSVData(Date startDateArg, Date endDateArg, String IdArg) {
-        minDate = startDateArg;
-        maxDate = endDateArg;
+    public CSVData(String IdArg) {
         Id = IdArg;
         values = new HashMap<>();
     }
@@ -71,13 +69,50 @@ public class CSVData implements Data {
      * @param fileString The Path to the file given as String.
      */
     @Override
-    public void init(String fileString) {
+    public void init(String fileString) throws Exception {
 
         // Parse the CSV file.
         Path filePath = Paths.get(fileString);
-        List<String[]> allLines = new ArrayList<>();
+
         // The amount of prices available is given by the amount of lines without the header.
-        size = allLines.size() - 1;
+        if (filePath.toFile().isFile()) {
+
+            HashMap<String, List<DataPoint>> parsedValues = parseFile(fileString);
+            extendValues(parsedValues);
+
+       } else if (filePath.toFile().isDirectory()) {
+
+            try (Stream<Path> paths = Files.walk(Paths.get(fileString))) {
+                Object[] allFiles = (Object[]) paths.filter(Files::isRegularFile).toArray();
+                for (int i=0; i<allFiles.length; i++) {
+                    Path f = (Path) allFiles[i];
+                    extendValues(parseFile(f.toString()));
+                }
+            } catch (Exception e) {
+                throw new Exception(e);
+            }
+
+       }
+
+    }
+
+    private void extendValues(HashMap<String, List<DataPoint>> valuesExtention) {
+            for (String key : valuesExtention.keySet()) {
+                if (values.containsKey(key)) {
+                    values.get(key).addAll(valuesExtention.get(key));
+                } else {
+                    values.put(key, valuesExtention.get(key));
+                }
+            }
+    }
+
+    private HashMap<String, List<DataPoint>> parseFile(String pathString) throws Exception {
+
+        // Parse the CSV file.
+        Path filePath = Paths.get(pathString);
+        List<String[]> allLines = new ArrayList<>();
+        HashMap<String, List<DataPoint>> parsedData = new HashMap<>();
+
         try {
             allLines = readAllLines(filePath);
         } catch (Exception e) {
@@ -95,7 +130,7 @@ public class CSVData implements Data {
             // Handle values for known tickers and new ones accordingly.
             try {
                 // Assign opening price as price and window_start as timeStamp.
-                values.get(ticker).add(new PriceDataPoint(
+                parsedData.get(ticker).add(new PriceDataPoint(
                     ticker, 
                     (Integer) Integer.parseInt(line[1]), 
                     Double.parseDouble(line[2]), 
@@ -119,30 +154,28 @@ public class CSVData implements Data {
                     );
                 List<DataPoint> records = new ArrayList<>();
                 records.add(dataPoint);
-                values.put(ticker, records);
+                parsedData.put(ticker, records);
             } catch (Exception e) {
                 System.out.println("An Exception other than NullPointException occured: " + e);
             }
         }
-            
-        // Uncomment for testing purposes to inspect an Excample for AAPL.
-        System.out.println(values.get("AAPL"));
+
+        if (this.size == null) {
+            this.size = allLines.size() - 1;
+        } else {
+            if (this.size != allLines.size() - 1) {
+                throw new Exception("Amount of lines in this file does not match with " +
+                "the lines of an already parsed file.");
+            }
+        }
+
+        return parsedData;
 
     }
 
     @Override
     public String getId() {
         return Id;
-    }
-
-    @Override
-    public Date getMinDate() {
-        return minDate;
-    }
-
-    @Override
-    public Date getMaxDate() {
-        return maxDate;
     }
 
     @Override
@@ -153,7 +186,7 @@ public class CSVData implements Data {
     @Override
     public HashMap<String, List<DataPoint>> getValues() throws Exception {
         if (values.isEmpty()) {
-            throw new Exception("No Data assigned. Please make sure to call init() before accessing values.");
+            throw new Exception("No Data assigned. Make sure to call init() before trying to access values.");
         } else {
             return values;
         }

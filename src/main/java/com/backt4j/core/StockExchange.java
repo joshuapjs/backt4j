@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.backt4j.data.PriceDataPoint;
+import com.backt4j.data.Data;
 
 /***
  * <p>The {@code StockExchange} class is a simple implementation for doing simple backtests with preferably stocks.</p>
@@ -36,7 +37,6 @@ public class StockExchange extends Exchange {
      */
     Results results;
 
-
     /***
      * <p>A record to track the progress of the trades being made.</p>
      * <p>The amount variable will tell whether or not its meant to be a short or long trade.</p>
@@ -45,10 +45,12 @@ public class StockExchange extends Exchange {
     private List<Transaction> transactions;
     private List<Results> resultsSeries;
 
-    public StockExchange(Double budget) {
+    public StockExchange(Double budget, Data newData) {
+        super(newData);
         openPositions = new HashMap<>();
         results = new Results();
         accountValue = budget;
+        // currentAccountValue is the remain budget after trades have been done.
         currentAccountValue = accountValue;
     }
 
@@ -125,46 +127,34 @@ public class StockExchange extends Exchange {
         }
         results.setAbsPerformance(results.getAbsPerformance() + tempAbsoluteReturn);
         results.setRelPerformance(results.getAbsPerformance() / accountValue);
-        if (results.maxDrawdown > tempRelativeReturn) {
+        if (results.getMaxDrawdown() > tempRelativeReturn) {
             results.setMaxDrawdown(tempRelativeReturn);
         }
         openPositions.remove(ticker);
         resultsSeries.add(results);
     }
 
-    private static double calculateVolatility(List<Double> values) {
-        if (values == null || values.size() == 0) {
-            throw new IllegalArgumentException("List must not be empty");
-        }
-
-        double mean = calculateMean(values);
-        double variance = 0.0;
-
-        for (double value : values) {
-            variance += Math.pow(value - mean, 2);
-        }
-        variance /= values.size();
-
-        return Math.sqrt(variance);
-    }
-
-    private static double calculateMean(List<Double> values) {
-        double sum = 0.0;
-        for (double value : values) {
-            sum += value;
-        }
-        return sum / values.size();
-    }
-
-    @Override
-    void handleRunEnd() {
-        List<Double> relativeReturnsList = new ArrayList<>();
-        Double vol = calculateVolatility(relativeReturnsList);
-        results.volatility = vol;
+    public List<Transaction> getTransactions() {
+        return transactions;
     }
 
     public HashMap<String, List<Double>> getOpenPositions() {
         return openPositions;
+    }
+
+    @Override
+    public Double getAccountValue() {
+        return accountValue;
+    }
+
+    @Override
+    public Double getCurrentAccountValue() {
+        return currentAccountValue;
+    }
+
+    @Override
+    public Results getResults() {
+        return results;
     }
 
 }

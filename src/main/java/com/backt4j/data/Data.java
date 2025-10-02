@@ -35,13 +35,9 @@ public interface Data {
      * 
      * @param fileString The path to the file given as String.
      */
-    public void init(String sourceString);
+    public void init(String sourceString) throws Exception;
 
     public String getId();
-
-    public Date getMinDate();
-
-    public Date getMaxDate();
 
     public Integer size();
 

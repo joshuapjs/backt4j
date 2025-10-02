@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -13,13 +14,13 @@ public class TestStrategy implements Strategy {
     final Double buyThreshold;
     final Double performanceThreshold;
     final List<Connection> connections;
-    final StockExchange exchange;
+    StockExchange exchange;
 
-    public TestStrategy(Double buy, Double sell, List<Connection> aConnection) {
+    public TestStrategy(Double buy, Double sell, Connection connection) {
         buyThreshold = buy;
         performanceThreshold = sell;
-        connections = aConnection;
-        exchange = (StockExchange) connections.get(0).getExchanges().get(0);
+        connections = new ArrayList<>();
+        connections.add(connection);
     }
 
     @Override
@@ -42,9 +43,12 @@ public class TestStrategy implements Strategy {
         }
     }
 
-    @Override
     public List<Connection> getConnections() {
         return connections;
+    }
+
+    public void addConnection(Connection newConnection) {
+        connections.add(newConnection);
     }
     
     public Double getBuyThreshold() {

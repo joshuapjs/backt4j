@@ -2,9 +2,10 @@ package com.backt4j.core;
 
 import com.backt4j.data.Data;
 import com.backt4j.data.DataPoint;
-import com.backt4j.strategy.Strategy;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 /***
@@ -22,49 +23,45 @@ public abstract class Exchange {
      * The Exchange holds a class variable implementing the {@link Data} interface, ensuring that {@code run} will work correctly.
      */
     public Data data;
-    /***
-     * Every Exchange can have a multitude of {@link Connection} instances.
-     * Not every Connection will receive the new {@code DataPoint} at the same time
-     */
-    public List<Connection> connections;
-    /***
-     * Exchange stores the most recent {@code DataPoint} it received.
-     */
-    HashMap<String, DataPoint> currentPrices;
-    
-    /***
-     * This classvariable will be requested by the {@link Backtest} library when its {@code run} method is called.
-     */
-    private Results results;
+    private HashMap<String, Iterator<DataPoint>> dataIterators;
+    private List<Double> performanceSeries;
 
-    /***
-     * <p>The {@code run} method iterates through the {@code data} and supplies each {@code Strategy} of a {@code Connection} with the new {@code DataPoint}.</p>
-     * <p>Beyond that it updates the {@code currentPrices} classvariable and saves for each asset the latest {@code DataPoint}.</p>
-     * 
-     * @throws Exception
-     */
-    public void run() throws Exception {
-        HashMap<String, List<DataPoint>> dataValues = data.getValues();
-        for (int i=0; i<dataValues.size(); i++) {
-            for (String key : data.getValues().keySet()) {
-                for (Connection connection : connections) {
-                    for (Strategy strategy : connection.getStrategies()) {
-                        currentPrices.put(key, dataValues.get(key).get(i));
-                        strategy.handleNewPrice(dataValues.get(key).get(i));
-                    }
-                }
-            }
-        }
-        handleRunEnd();
+    public Exchange(Data exchangeData) {
+        data = exchangeData;
+        dataIterators = new HashMap<String, Iterator<DataPoint>>();
+        performanceSeries = new ArrayList<Double>();
     }
 
     /***
-     * <p>This method is always called when the {@code run} method of the {@code Exchange} class terminates.</p>
-     * <p>It is intended to do calculations that require all data to be processed by the {@code Strategy} within this method, 
-     * e.g. volatility, in order to supply the {@code results} class variable, which is needed for {@code run} method of the {@link Backtest} class, 
-     * with the correct values after the Exchange has iterated through all the available data.</p>
+     * The Exchange stores the most recent {@code DataPoint} it received.
      */
-    abstract void handleRunEnd();
+    HashMap<String, DataPoint> currentPrices;
+
+    public HashMap<String, DataPoint> next() throws Exception {
+
+        if (data == null) {
+            throw new Exception("The data classvariable is null. No Data instance was provided.");
+        }
+
+        if (dataIterators.isEmpty()) {
+            for (String key : data.getValues().keySet()) {
+                dataIterators.put(key, data.getValues().get(key).iterator());
+            }
+        }
+
+        HashMap<String, DataPoint> nextDataPoints = new HashMap<>();
+        for (String key : data.getValues().keySet()) {
+            if (dataIterators.get(key).hasNext()) {
+                nextDataPoints.put(key, dataIterators.get(key).next());
+            } else {
+                nextDataPoints.put(key, null);
+            }
+        }
+
+        performanceSeries.add((getCurrentAccountValue() - getAccountValue())/getAccountValue());
+        
+        return nextDataPoints;
+    }
 
     public Data getData() {
         return data;
@@ -74,20 +71,14 @@ public abstract class Exchange {
         this.data = data;
     }
 
-    public List<Connection> getConnections() {
-        return connections;
-    }
+    public List<Double> getPerformanceSeries() {
+        return performanceSeries;
+    };
 
-    public void setConnections(List<Connection> connections) {
-        this.connections = connections;
-    }
+    abstract public Double getAccountValue();
 
-    public Results getResults() {
-        return results;
-    }
+    abstract public Double getCurrentAccountValue();
 
-    public void setResults(Results results) {
-        this.results = results;
-    }
+    abstract public Results getResults();
 
 }

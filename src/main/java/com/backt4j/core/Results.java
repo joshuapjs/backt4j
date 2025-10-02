@@ -9,20 +9,20 @@ import java.util.HashMap;
  */
 public class Results {
 
-    public Double absPerformance;
-    public Double relPerformance;
-    public Double volatility;
-    public Double maxDrawdown;
+    private Double absPerformance;
+    private Double relPerformance;
+    private Double volatility;
+    private Double maxDrawdown;
 
     /***
      * If values are not specified initially they can be set by the setter methods.
      * At the same time missing values will still be displayed in a reasonable way.
      */
     public Results() {
-        relPerformance = 0.00;
-        absPerformance = 0.00;
-        volatility = 0.00;
-        maxDrawdown = 0.00;
+        relPerformance = null;
+        absPerformance = null;
+        volatility = null;
+        maxDrawdown = null;
     }
 
     public Results(Double absPerformanceDouble, 
