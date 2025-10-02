@@ -21,7 +21,7 @@ import java.util.List;
 public class Backtest {
 
     private List<Connection> backtestConnections; 
-    public Results results;
+    public Result results;
 
     public class Builder {
 
@@ -142,7 +142,7 @@ public class Backtest {
         }
     }
 
-    private static double calculateVolatility(List<Double> values) {
+    static double calculateVolatility(List<Double> values) {
         if (values == null || values.size() == 0) {
             throw new IllegalArgumentException("List must not be empty");
         }
@@ -158,7 +158,7 @@ public class Backtest {
         return Math.sqrt(variance);
     }
 
-    private static double calculateMean(List<Double> values) {
+    static double calculateMean(List<Double> values) {
         double sum = 0.0;
         for (double value : values) {
             sum += value;

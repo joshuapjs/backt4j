@@ -14,7 +14,7 @@ import java.util.List;
  * For that it needs to hold a {@code Data} Object. The {@code Data} Object is then unpacked into its {@code DataPoint} Objects during the {@code run} Method call.
  * It is encouraged to implement personalized {@code DataPoint} Objects.</p>
  * <p>On the other hand an {@code Exchange} records the trades initiated by the Strategy class and the performance of the Strategy. 
- * It is therefore naturally expected that an Exchange also calculates the correct values for each class variable of the {@link Results} Object.
+ * It is therefore naturally expected that an Exchange also calculates the correct values for each class variable of the {@link Result} Object.
  * The Results Object will be requested by the {@link Backtest} class after the {@code Strategy} ran on the data.</p>
  */
 public abstract class Exchange {
@@ -79,6 +79,6 @@ public abstract class Exchange {
 
     abstract public Double getCurrentAccountValue();
 
-    abstract public Results getResults();
+    abstract public Result getResults();
 
 }

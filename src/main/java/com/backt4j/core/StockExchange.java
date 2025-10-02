@@ -35,7 +35,7 @@ public class StockExchange extends Exchange {
     /***
      * The {@code results } object will keep track of the performance and be accessible to {@link com.backt4j.core.Backtest} for displaying it.
      */
-    Results results;
+    Result results;
 
     /***
      * <p>A record to track the progress of the trades being made.</p>
@@ -43,12 +43,12 @@ public class StockExchange extends Exchange {
      */
     private record Transaction(String ticker, Double amount, Double price, Long timeStamp) {};
     private List<Transaction> transactions;
-    private List<Results> resultsSeries;
+    private List<Result> resultsSeries;
 
     public StockExchange(Double budget, Data newData) {
         super(newData);
         openPositions = new HashMap<>();
-        results = new Results();
+        results = new Result();
         accountValue = budget;
         // currentAccountValue is the remain budget after trades have been done.
         currentAccountValue = accountValue;
@@ -153,7 +153,7 @@ public class StockExchange extends Exchange {
     }
 
     @Override
-    public Results getResults() {
+    public Result getResults() {
         return results;
     }
 
