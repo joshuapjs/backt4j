@@ -10,22 +10,22 @@ import com.backt4j.data.DataPoint;
 import com.backt4j.strategy.Strategy;
 
 /***
- * <h2>Remarks on implementation</h2>
+ * <h2>How to implement</h2>
  * 
- * <p>The Methods to implement are {@code getInitialBudget}, {@code getCurrentAccountValue}, {@code getCurrentBudget} and {@code getResults}. 
+ * <p>The Methods to implement are {@code getInitialBudget}, {@code getCurrentPortfolioValue}, {@code getRemainingBudget} and {@code getResult}. 
  * 
  * <ul>
  * <li>{@code getInitialBudget}: Should return a double reflecting the initial budget given to the {@code Exchange} which serves as a bound to prevent unlimited trading.</li>
  * <li>{@code getCurrentPortfolioValue}: Should return the current value of the portfolio. This should be updated during every call with the help 
- * of {@code currentPrices} and some classvariable that tracks the assets in the portfolio. The goal is that it returns a double reflecting the 
+ * of {@code currentPrices} and some classvariable that tracks the assets in the portfolio. It is the goal that this returns a double reflecting the 
  * current monetary value of the portfolio.</li>
- * <li>{@code getCurrentBudget}: Should return the remaining fictive monetary budget of the fictive account of the {@link Strategy} at {@code Exchange}. This should be updated 
+ * <li>{@code getRemainingBudget}: Should return the remaining fictive monetary budget of the fictive account of the {@link Strategy} at {@code Exchange}. This should be updated 
  * every time a trade was made by the respective monetary costs or returns.</li>
  * </ul>  
- * In order to calculate all measures correctly the {@code initialBudget} should be {@code final} as it is the initially assigned budget before any trade was made. 
- * The {@code getCurrentAccountValue} should return the {@code currentAccountValue} which shoud be updated every time it is called with the help of currentPrices and some classvariable 
+ * In order to calculate all measures correctly the {@code initialBudget} should be {@code final} as it's the initially assigned budget before any trade was made. 
+ * The {@code getCurrentPortfolioValue} should return the {@code currentAccountValue} which shoud be updated every time it is called with the help of currentPrices and some classvariable 
  * tracking the current portfolio. This means in your own implementation of {@code Exchange} this value must be updated after every transaction and of course the 
- * bound provided by {@code getCurrentBudget} must be checked prior to an transaction so that it never goes below zero. The methods {@code getInitialBudget}, {@code getCurrentAccountValue}
+ * bound provided by {@code getRemainingBudget} must be checked prior to an transaction so that it never goes below zero. The methods {@code getInitialBudget}, {@code getCurrentPortfolioValue}
  * are used for calculating the performance of the Strategy with every new {@link DataPoint} supplied by {@code next}.
  * The {@code getResult} method provides a {@link Result} Object. The calculation of the volatility is handled by the Framework based on the performance values generated 
  * with every new price supplied via {@code next}.</p>
@@ -55,27 +55,27 @@ import com.backt4j.strategy.Strategy;
 public abstract class Exchange {
 
     /***
-     * The Exchange must hold a data classvariable implementing the {@link Data} interface, 
-     * in order for {@code run} to work properly.
+     * <p>The Exchange must hold a data classvariable implementing the {@link Data} interface,
+     * in order for {@code run} to work properly.</p>
      */
     public Data data;
     /***
-     * dataIterator stores the Iterators for each of the {@code List<DataPoint>} elements from {@code Data}.
+     * <p>dataIterator stores the Iterators for each of the {@code List<DataPoint>} elements from {@code Data}.
      * This enables {@code run} to sequentially work through each of the lines of data, one column at a time. 
      * This behavior is desired because if Data contains values for multiple Assets we want to simulate that the {@code Strategy}
      * receives trade resulted price updates for each of the Stocks but a different times. As we iterate later {@code HashMap}
      * through a {@code Set} of keys there is at least theoretically no guaranteed order we get the new {@link DataPoint} from each of
-     * the Iterators stored as values in dataIterators.
+     * the Iterators stored as values in dataIterators.</p>
      */
     private HashMap<String, Iterator<DataPoint>> dataIterators;
     /***
-     * This list will be used by {@link Backtest} to compute the volatility the Strategies performance. It is collected automatically
-     * using the users implementations of {@code getInitialBudget} and {@code getCurrentPortfolioValue}.
+     * <p>This list will be used by {@link Backtest} to compute the volatility the Strategies performance. It is collected automatically
+     * using the users implementations of {@code getInitialBudget} and {@code getCurrentPortfolioValue}.</p>
      */
     private List<Double> performanceSeries;
 
     /***
-     * The Exchange stores the most recent {@code DataPoint} it received.
+     * <p>The Exchange stores the most recent {@code DataPoint} it received.</p>
      */
     HashMap<String, DataPoint> currentPrices;
 
@@ -86,9 +86,9 @@ public abstract class Exchange {
     }
 
     /***
-     * Returns a {@link HashMap} containing {@link DataPoint} instead of a single {@link DataPoint} to allow that the {@link Strategy} 
+     * <p>Returns a {@link HashMap} containing {@link DataPoint} instead of a single {@link DataPoint} to allow that the {@link Strategy} 
      * can run on multiple Assets all at once. Effectively a single line of data is returned.
-     * @return {@code HashMap<String, DataPoint>} that represents a single line of data.
+     * @return {@code HashMap<String, DataPoint>} that represents a single line of data.</p>
      * @throws Exception in case data is {@code null}.
      */
     public HashMap<String, DataPoint> next() throws Exception {
@@ -133,32 +133,32 @@ public abstract class Exchange {
     };
 
     /***
-     * Should return the initial budget that was allocated to test the {@link Strategy} with. 
-     * It is recommended to set the respective classvariable as {@code final}.
-     * @return A (double) classvariable called initialBudget or similar.
+     * <p>Should return the initial budget that was allocated to test the {@link Strategy} with. 
+     * It is recommended to set the respective classvariable as {@code final}.</p>
+     * @return A double called initialBudget or similar.</p>
      */
     abstract public Double getInitialBudget();
 
     /***
-     * Should return the current portfolio value that resulted from a {@link Strategy} instances operations. 
+     * <p>Should return the current portfolio value that resulted from the operations of a {@link Strategy} instance. 
      * In order to update the value effectively the classvariable {@code currentPrices} can be used to update the currentValue.
-     * The implementation is left to the user because some user might want to add their remaining Budget, effectively the cash 
-     * to the portfolio value. As one main goal of this Framework is to be not to restrictive this is not provided here but in 
-     * finished implementation of {@code Exchange}, e.g. {@link StockExchange}.
-     * @return A (double) classvariable called currentPortfolioValue or similar.
+     * The implementation is left to the user because some user might want to add their remaining Budget, effectively the cash, 
+     * to the portfolio value. As one main goal of this Framework is to be not to restrictive, this feature is not provided 
+     * here but in finished implementation of {@code Exchange}, e.g. {@link StockExchange}.</p>
+     * @return A double called currentPortfolioValue or similar.
      */
     abstract public Double getCurrentPortfolioValue();
 
     /***
-     * Should return the remaining budget to restrict the {@link Strategy} fomr using more money than it was allowed to use for trading.
-     * @return remainingBudget
+     * <p>Should return the remaining budget to restrict the {@link Strategy} from using more money than it was allowed to use for trading.
+     * @return remainingBudget</p>
      */
     abstract public Double getRemainingBudget();
 
     /***
-     * Should return the {@link Result} filled with the current values for its parameters.
+     * <p>Should return the {@link Result} filled with values for all its parameters accessible via setters.
      * This Method is called after the {@link Strategy} ran on all {@link DataPoints} of {@link Data}.
-     * @return
+     * @return Result</p>
      */
     abstract public Result getResult();
 

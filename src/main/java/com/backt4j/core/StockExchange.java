@@ -8,38 +8,45 @@ import com.backt4j.data.PriceDataPoint;
 import com.backt4j.data.Data;
 
 /***
- * <p>The {@code StockExchange} class is a simple implementation for doing simple backtests with preferably stocks.</p>
- * <p>It might work with similar assets as well but it is designed for Stocks (e.g. it won't work for Options or Futures).
- * You can use it to run quick backtests for a first impression of a signal (without considreation of trading costs because
- * it would introduce way more complexity).</p>
+ * <p>The {@code StockExchange} class is an implementation for doing simple backtests with stocks.</p>
+ * <p>It might work with similar assets but was designed with stocks in mind. 
+ * You can use it to run quick backtests for a first impression of a signal.</p>
  */
 public class StockExchange extends Exchange {
 
     /***
-     * <p>The value of the Entries in {@code openPositions} are specified as as List with two elements:</p>
-     * <p>The first value is the amount of shares of the Position. It can be expected that this value is
-     * always a whole number so {@code amount.intValue()} will not result in information loss.</p>
-     * <p>The second value is the price the shares where bought at. This oversimplifies dramatically how transactions 
-     * work. It is therefore encouraged to adjust this in your own implementation to consider different prices.</p>
+     * <p>The Entries in {@code openPositions} are specified as List of two elements:</p>
+     * <ul>
+     * <li>The <b>first value is the amount of shares of the Position</b>. It is expected that this value is
+     * always a whole number so {@code amount.intValue()} must work without information loss. 
+     * Trading of fractions is thereby not implemented.</li>
+     * <li>The <b>second value is the price the shares where bought at</b>. This oversimplifies dramatically how transactions 
+     * work. It is therefore encouraged to adjust this in your own implementation to consider different prices.</li>
+     * </ul>
      */
     private HashMap<String, List<Double>> openPositions;
     /***
-     * The {@code accountValue} specifies the exact initial amount of the account at the Exchange. it is used to calculate
-     * based on the absolute realised return, the relative realised performance.
+     * The {@code initialBudget} specifies the initial amount allocated to the account at the Exchange.
      */
-    public final Double accountValue;
+    public final Double initialBudget;
     /***
-     * The {@code currentAccountValue} is the (current) capital available, so the result of the accountValue and Transactions.
+     * The {@code remaininglBudget} specifies the remaining amount allocated to the account at the Exchange. 
+     * Which is available for further asset purchases. It also includes realised returns.
+     * This variable should be used for bounds checking to determine if a trade is allowed or not.
      */
-    private Double currentAccountValue;
+    public Double remainingBudget;
+    /***
+     * The {@code currentPortfolioValue}, so the result of the initialBudget + (changes from Transactions).
+     */
+    private Double currentPortfolioValue;
     /***
      * The {@code results } object will keep track of the performance and be accessible to {@link com.backt4j.core.Backtest} for displaying it.
      */
     Result results;
 
     /***
-     * <p>A record to track the progress of the trades being made.</p>
-     * <p>The amount variable will tell whether or not its meant to be a short or long trade.</p>
+     * <p>A record to track each trade that happened.</p>
+     * <p>The sign of the amount number will tell whether or not its meant to be a short or long trade.</p>
      */
     private record Transaction(String ticker, Double amount, Double price, Long timeStamp) {};
     private List<Transaction> transactions;
@@ -49,9 +56,18 @@ public class StockExchange extends Exchange {
         super(newData);
         openPositions = new HashMap<>();
         results = new Result();
-        accountValue = budget;
+        initialBudget = budget;
         // currentAccountValue is the remain budget after trades have been done.
-        currentAccountValue = accountValue;
+        remainingBudget = initialBudget;
+    }
+
+    public StockExchange(Integer budget, Data newData) {
+        super(newData);
+        openPositions = new HashMap<>();
+        results = new Result();
+        initialBudget = Double.valueOf(budget);
+        // currentAccountValue is the remain budget after trades have been done.
+        remainingBudget = initialBudget;
     }
 
     /***
@@ -68,7 +84,7 @@ public class StockExchange extends Exchange {
      * @return if successfull returns 0, if not 1 is returned. A trade is unsuccessfull if there is not enough budget to make it.
      */
     public int marketOrder(String ticker, Double amount, Double price, Long timeStamp) {
-        if (amount * price * -1 + currentAccountValue < 0) {
+        if (amount * price * -1 + remainingBudget < 0) {
             return 1;
         }
         transactions.add(new Transaction(ticker, amount, price, timeStamp));
@@ -96,7 +112,7 @@ public class StockExchange extends Exchange {
             updatedPositionValues.add(weightedPrice);
             openPositions.put(ticker, updatedPositionValues);
             resultsSeries.add(results);
-            currentAccountValue =- amount * price;
+            remainingBudget =- amount * price;
         }
         return 0;
     }
@@ -126,7 +142,7 @@ public class StockExchange extends Exchange {
 
         }
         results.setAbsPerformance(results.getAbsPerformance() + tempAbsoluteReturn);
-        results.setRelPerformance(results.getAbsPerformance() / accountValue);
+        results.setRelPerformance(results.getAbsPerformance() / initialBudget);
         if (results.getMaxDrawdown() > tempRelativeReturn) {
             results.setMaxDrawdown(tempRelativeReturn);
         }
@@ -144,12 +160,17 @@ public class StockExchange extends Exchange {
 
     @Override
     public Double getInitialBudget() {
-        return accountValue;
+        return initialBudget;
+    }
+
+    @Override
+    public Double getRemainingBudget() {
+        return remainingBudget;
     }
 
     @Override
     public Double getCurrentPortfolioValue() {
-        return currentAccountValue;
+        return currentPortfolioValue;
     }
 
     @Override

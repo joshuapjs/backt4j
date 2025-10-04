@@ -2,7 +2,6 @@ package com.backt4j.data;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Date;
 
 /***
  * <p>The main abstract class for all implementations of PriceData classes that encapsulate the parsing and other 
@@ -35,7 +34,7 @@ public interface Data {
      * 
      * @param fileString The path to the file given as String.
      */
-    public void init(String sourceString) throws Exception;
+    public Data init(String sourceString) throws Exception;
 
     public String getId();
 

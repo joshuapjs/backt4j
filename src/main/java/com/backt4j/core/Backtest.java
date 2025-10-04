@@ -8,11 +8,11 @@ import java.util.HashMap;
 import java.util.List;
 
 /***
- * <p>The {@code Backtest} class is the most important class of the {@code backt4j} framework. It links Strategy and Exchange and
- *  it prodices a Result by backtesting the Strategy on the given Exchange.</p>
+ * <p>The {@code Backtest} class links {@link Strategy} and {@link Exchange} by producing a {@link Result} by backtesting the {@link Strategy} 
+ * on the given {@link Exchange}.</p>
  * 
- * <p>It is possible to handle different instances of an asset at once (so e.g. multiple stocks at once), however make sure,
- * that there is always an equal amount of price data for every asset available.</p>
+ * <p>It is possible to handle different instances of an asset at once so e.g. multiple stocks, however make sure,
+ * that there is always an equal amount of price data points for every asset available.</p>
  * <p>Also keep in mind that there is no guarantee about the order the prices are fed into the strategy at one point in time. 
  * The prices will be fed into the strategy in order of the time they occured, but it can't be ensured, 
  * that if in one round {@code n}, the price of {@code stock A} was processed after the price of {@code stock B}, that this will 
@@ -20,10 +20,22 @@ import java.util.List;
  */
 public class Backtest {
 
+    /***
+     * The Backtest either receives a {@link List} of custom {@link Connection} or preduces its own {@link Connection} by 
+     * combining an {@link Exchange} and a {@link Strategy} into one. Custom connections can offer more complex combination 
+     * and are as of today 2025-10-03 an experimental feature.
+     */
     private List<Connection> backtestConnections; 
+    /***
+     * an aggregated {@link Result} element, combined of results instances from different {@link Exchange} instances.
+     */
     public Result results;
 
-    public class Builder {
+    /***
+     * {@code Backtest} follows the Builder Pattern to allow for a more readable and at the same time flexible construction of
+     * instances.
+     */
+    public static class Builder {
 
         private Strategy strategy;
         private List<Exchange> exchanges;
@@ -31,32 +43,35 @@ public class Backtest {
 
         public Builder() {}
 
-        public void add(Strategy aStrategy) throws Exception {
+        public Builder add(Strategy aStrategy) throws Exception {
             if (strategy == null) {
                 strategy = aStrategy;
             } else {
                 throw new Exception("You tried to add two Strategies. " +
                 "Please use custom Connections for testing multiple Strategies in one Backtest.");
             }
+            return this;
         }
 
-        public void add(Exchange exchange) {
+        public Builder add(Exchange exchange) {
             if (exchanges == null) {
                 List<Exchange> tmpExchanges= new ArrayList<>();
                 exchanges = tmpExchanges;
             }
             exchanges.add(exchange);
+            return this;
         }
 
-        public void add(List<Exchange> exchangesList) {
+        public Builder jadd(List<Exchange> exchangesList) {
             if (exchanges == null) {
                 exchanges = exchangesList;
             } else {
                 exchangesList.addAll(exchangesList);
             }
+            return this;
         }
 
-        public void addConnections(List<Connection> connections) throws Exception {
+        public Builder addConnections(List<Connection> connections) throws Exception {
             if (exchanges == null && strategy == null) {
                 customConnections = connections;
             } else {
@@ -64,6 +79,7 @@ public class Backtest {
                 "custom Connections will overwrite them. Please decide for either custom Connections " +
                 "or the standard build method.");
             }
+            return this;
         }
 
         public Backtest build() throws Exception {
@@ -88,11 +104,17 @@ public class Backtest {
     }
 
     /***
-     * <p>The {@code run} method iterates through the {@code data} and supplies each {@code Strategy} of a {@code Connection} with the new {@code DataPoint}.</p>
-     * <p>Beyond that it updates the {@code currentPrices} classvariable and saves for each asset the latest {@code DataPoint}.</p>
-     * <p>This method will also run the Strategy on the Exchanges data and print out all the results in an overview on the Screen.</p>
+     * <p>After construction of {@link Strategy}, {@link Exchange} and {@link Backtest}, this method must be called to run the actual backtest.</p>
+     * <p>The {@code run} method iterates through the List of {@code Connection} instances and supplies each {@code Strategy} of a 
+     * {@code Connection} with all new {@code DataPoint} instances handed over by an {@link Exchange}. If no {@code Connection} was given 
+     * during construction of the {@link Exchange}, the {@link Exchange} will generate one by itself. Please have a look at the {@link Backtest.Builder} 
+     * for further insights. 
+     * It is supported to run the {@link Strategy} with multiple assets at the same time (further information at {@link Exchange}).
+     * Beyond that, it is possible to use multiple {@link Exchanges} from multiple connections to allow for very flexible setups and scenarios.</p>
+     * <p>The most recent DataPoints are saved in {@code currentPrices} (for each of the multiple assets if applicable).</p>
+     * <p>This method will also run the Strategy on the {@link Exchange} data and print out all the results in an overview on the Screen.</p>
      * 
-     * @throws Exception
+     * @throws Exception because next() throws an exception in case data is data is  {@code null}.
      */
     public void run() throws Exception {
         for (Connection connection : backtestConnections) {

@@ -1,5 +1,4 @@
 package com.backt4j.data;
-import java.io.File;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,7 +8,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import com.opencsv.CSVReader;
@@ -69,7 +67,7 @@ public class CSVData implements Data {
      * @param fileString The Path to the file given as String.
      */
     @Override
-    public void init(String fileString) throws Exception {
+    public Data init(String fileString) throws Exception {
 
         // Parse the CSV file.
         Path filePath = Paths.get(fileString);
@@ -93,7 +91,7 @@ public class CSVData implements Data {
             }
 
        }
-
+       return this;
     }
 
     private void extendValues(HashMap<String, List<DataPoint>> valuesExtention) {
