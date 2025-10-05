@@ -1,10 +1,27 @@
 # backt4j
 
-A small framework for backtesting for Java.
+A small customizable backtesting framework for Java.
+
+# Getting Started
+
+Diving right in:
+```java
+CSVData priceData = (CSVData) new CSVData()
+        .init(/* path to csv file */);
+
+Backtest backtest = new Backtest.Builder()
+        .add(new StockExchange(
+            1_000_000, 
+            priceData))
+        .add(new TestStrategy(100.0, 10.0))
+        .build();
+
+backtest.run();
+```
 
 # Overview
 
-The whole framework is based on three primary parts that interact with each other. We have on the first side the strategy and on the other side the exchange. 
-The strategy is the trading logic, the user of this framework needs to implement. Every Strategy must extend the Strategy class and thereby specify what should happen if a new price is fed into the Strategy. 
-On the other hand we have the exchange. The purpose of the exchange is on the one hand to supply data to the Strategy and on the other hand to record trades from the strategy while at the same time risk and performace related indicators are calculated based on the action initiated by the strategy.
-Both classes are connected through a Connection class. This means every instance of Exchange and Strategy must receive a Connection during initialization.
+The framework is based on three primary parts that interact with each other:
+- [Strategy](src/main/java/com/backt4j/strategy/Strategy.java): A `Strategy` implementation must contain the trading logic, the user of this framework wants to test. Such an implementation must specify what happens if a new [DataPoint](src/main/java/com/backt4j/data/DataPoint.java), e.g. new price data, is fed to `handleNewPrice()`. An example how this could be done can be viewed [here](src/test/java/TestStrategy.java).
+- [Exchange](src/main/java/com/backt4j/core/Exchange.java): The `Exchange` supplies the `Strategy` with [DataPoints](src/main/java/com/backt4j/data/DataPoint.java) whenever `next()` is called. On the other hand it should record trades made by the `Strategy` while at the same time calculate risk and performace related indicators. An example how this could be done can be viewed [here](src/main/java/com/backt4j/core/StockExchange.java).
+- [Backtest](src/main/java/com/backt4j/core/Backtest.java): Both classes are connected through a [Connection](src/main/java/com/backt4j/core/Connection.java) class, which is a simple wrapper to organize a `Strategy` and `Exchange`. `Connection` instances are managed by the `Backtest` class.

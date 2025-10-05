@@ -10,6 +10,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
+import java.sql.Timestamp;
+
 import com.opencsv.CSVReader;
 
 /***
@@ -42,6 +44,12 @@ public class CSVData implements Data {
 
     public CSVData(String IdArg) {
         Id = IdArg;
+        values = new HashMap<>();
+    }
+
+    public CSVData() {
+        // Supply default Id if none is given.
+        Id = "csv-element-" + (new Timestamp(System.currentTimeMillis())).getTime(); 
         values = new HashMap<>();
     }
 

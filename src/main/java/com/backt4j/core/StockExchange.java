@@ -35,10 +35,7 @@ public class StockExchange extends Exchange {
      * This variable should be used for bounds checking to determine if a trade is allowed or not.
      */
     public Double remainingBudget;
-    /***
-     * The {@code currentPortfolioValue}, so the result of the initialBudget + (changes from Transactions).
-     */
-    private Double currentPortfolioValue;
+
     /***
      * The {@code results } object will keep track of the performance and be accessible to {@link com.backt4j.core.Backtest} for displaying it.
      */
@@ -47,8 +44,9 @@ public class StockExchange extends Exchange {
     /***
      * <p>A record to track each trade that happened.</p>
      * <p>The sign of the amount number will tell whether or not its meant to be a short or long trade.</p>
+     * <p>Method calls of marketClearPosition will create a respective transaction as well.
      */
-    private record Transaction(String ticker, Double amount, Double price, Long timeStamp) {};
+    public record Transaction(String ticker, Double amount, Double price, Long timeStamp) {};
     private List<Transaction> transactions;
     private List<Result> resultsSeries;
 
@@ -57,8 +55,9 @@ public class StockExchange extends Exchange {
         openPositions = new HashMap<>();
         results = new Result();
         initialBudget = budget;
-        // currentAccountValue is the remain budget after trades have been done.
-        remainingBudget = initialBudget;
+        remainingBudget = budget;
+        transactions = new ArrayList<>();
+        resultsSeries = new ArrayList<>();
     }
 
     public StockExchange(Integer budget, Data newData) {
@@ -66,8 +65,9 @@ public class StockExchange extends Exchange {
         openPositions = new HashMap<>();
         results = new Result();
         initialBudget = Double.valueOf(budget);
-        // currentAccountValue is the remain budget after trades have been done.
-        remainingBudget = initialBudget;
+        remainingBudget = Double.valueOf(budget);
+        transactions = new ArrayList<>();
+        resultsSeries = new ArrayList<>();
     }
 
     /***
@@ -90,12 +90,14 @@ public class StockExchange extends Exchange {
         transactions.add(new Transaction(ticker, amount, price, timeStamp));
 
         Integer orderSign = Integer.signum(amount.intValue());
-        Double currentAmount = openPositions.get(ticker).get(0);
-        Double currentPrice = openPositions.get(ticker).get(1);
+        Double currentAmount;
+        Double currentPrice;
+        currentAmount = openPositions.get(ticker) != null ? openPositions.get(ticker).get(0) : 0.0;
+        currentPrice = openPositions.get(ticker) != null ? openPositions.get(ticker).get(1) : 0.0;
 
-        // check whether the new order changes the openposition to zero or switches the sign
+        // check whether the new marketorder changes the open position to zero or switches the sign,
         // resulting in an implicit clearance of the position. In the second case it makes sense to
-        // handle the order as two second ones, one being the one clearing the position and the other 
+        // handle the order as two separate ones, one being the one clearing the position and the other 
         // being the new position in the other direction.
         if (currentAmount + amount == 0.00) {
             marketClearPosition(ticker);
@@ -112,7 +114,7 @@ public class StockExchange extends Exchange {
             updatedPositionValues.add(weightedPrice);
             openPositions.put(ticker, updatedPositionValues);
             resultsSeries.add(results);
-            remainingBudget =- amount * price;
+            remainingBudget -= amount * price;
         }
         return 0;
     }
@@ -128,6 +130,13 @@ public class StockExchange extends Exchange {
         Double initialValue = openPositions.get(ticker).get(0) * openPositions.get(ticker).get(1);
         PriceDataPoint currentPrice = (PriceDataPoint) this.currentPrices.get(ticker);
         Double currentValue = currentPrice.open() * openPositions.get(ticker).get(0);
+        // In the case that we try to even out a short position we want to deduct that price of 
+        // Buying back the shares from our remaining budget.
+        remainingBudget += currentValue;
+        transactions.add(new Transaction(ticker, 
+                                        openPositions.get(ticker).get(0), 
+                                        currentPrice.open(),
+                                        null));
         Double tempAbsoluteReturn;
         Double tempRelativeReturn;
         if (openPositions.get(ticker).get(0) >= 0) {
@@ -141,10 +150,16 @@ public class StockExchange extends Exchange {
             tempRelativeReturn = tempAbsoluteReturn / (initialValue * -1);
 
         }
-        results.setAbsPerformance(results.getAbsPerformance() + tempAbsoluteReturn);
-        results.setRelPerformance(results.getAbsPerformance() / initialBudget);
-        if (results.getMaxDrawdown() > tempRelativeReturn) {
+        Double currentAbsPerf = results.getAbsPerformance() != null ? results.getAbsPerformance() : 0.0;
+        results.setAbsPerformance(currentAbsPerf + tempAbsoluteReturn);
+        results.setRelPerformance((currentAbsPerf + tempAbsoluteReturn) / initialBudget);
+
+        Double currentMaxDraw = results.getMaxDrawdown() != null ? results.getMaxDrawdown() : 0.0;
+        if (tempRelativeReturn < 0.0 && tempRelativeReturn < currentMaxDraw) {
             results.setMaxDrawdown(tempRelativeReturn);
+        }
+        if (results.getMaxDrawdown() == null) {
+            results.setMaxDrawdown(currentMaxDraw);
         }
         openPositions.remove(ticker);
         resultsSeries.add(results);
@@ -170,6 +185,13 @@ public class StockExchange extends Exchange {
 
     @Override
     public Double getCurrentPortfolioValue() {
+        Double currentPortfolioValue = 0.0;
+        for (String ticker : openPositions.keySet()) {
+            Double sharesBought= openPositions.get(ticker).get(0);
+            Double buyIn = openPositions.get(ticker).get(1);
+            Double currentPrice = ((PriceDataPoint) currentPrices.get(ticker)).open();
+            currentPortfolioValue += sharesBought * (currentPrice - buyIn);
+        }
         return currentPortfolioValue;
     }
 

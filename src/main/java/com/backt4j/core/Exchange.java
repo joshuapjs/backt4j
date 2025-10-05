@@ -83,6 +83,7 @@ public abstract class Exchange {
         data = exchangeData;
         dataIterators = new HashMap<String, Iterator<DataPoint>>();
         performanceSeries = new ArrayList<Double>();
+        currentPrices = new HashMap<>();
     }
 
     /***
@@ -108,14 +109,18 @@ public abstract class Exchange {
         HashMap<String, DataPoint> nextDataPoints = new HashMap<>();
         for (String key : data.getValues().keySet()) {
             if (dataIterators.get(key).hasNext()) {
-                nextDataPoints.put(key, dataIterators.get(key).next());
+                DataPoint dataPoint = dataIterators.get(key).next();
+                nextDataPoints.put(key, dataPoint);
+                currentPrices.put(key, dataPoint);
             } else {
                 nextDataPoints.put(key, null);
+                currentPrices.put(key, null);
             }
         }
 
-        // Calculate the current performance of the portfolio to later get the volatility of the respective Strategy. 
-        performanceSeries.add((getCurrentPortfolioValue() - getInitialBudget())/getInitialBudget());
+        // Calculate the current performance of the portfolio to later get the volatility of the respective Strategy.
+        Double portfolioValue = getCurrentPortfolioValue() != null ? getCurrentPortfolioValue() : 0.0;
+        performanceSeries.add((portfolioValue - getInitialBudget())/getInitialBudget());
         
         return nextDataPoints;
     }

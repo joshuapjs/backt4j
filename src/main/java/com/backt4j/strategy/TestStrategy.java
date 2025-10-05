@@ -1,15 +1,12 @@
-import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
+package com.backt4j.strategy;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.Map.Entry;
 
 import com.backt4j.core.Connection;
 import com.backt4j.core.StockExchange;
 import com.backt4j.data.DataPoint;
 import com.backt4j.data.PriceDataPoint;
-import com.backt4j.strategy.Strategy;
 
 public class TestStrategy implements Strategy {
 
@@ -31,33 +28,43 @@ public class TestStrategy implements Strategy {
         connections.add(new Connection(stockExchange, this));
     }
 
+    public TestStrategy(Double buy, Double sell) {
+        buyThreshold = buy;
+        performanceThreshold = sell;
+        connections = new ArrayList<>();
+    }
+
     @Override
     public void handleNewPrice(DataPoint dataPoint) {
         PriceDataPoint priceDataPoint = (PriceDataPoint) dataPoint;
         Double price = priceDataPoint.open();
         StockExchange stockExchange = (StockExchange) connections.get(0).getExchanges().get(0);
         if (price < buyThreshold) {
-            stockExchange.marketOrder(priceDataPoint.id(), 
-                            Double.valueOf(100.0), 
-                            priceDataPoint.open(), 
-                            priceDataPoint.window_start().getTime());
+            int success = stockExchange.marketOrder(priceDataPoint.id(), 
+                                    1000.0, 
+                                    priceDataPoint.open(), 
+                                    priceDataPoint.window_start().getTime());
+            if (success == 1) {
+                System.out.println("marketOrder failed with: " + " " + priceDataPoint.id() + " " +
+                                    1000.0 + " " +
+                                    priceDataPoint.open() + " " +
+                                    priceDataPoint.window_start().getTime());
+            }
         }
 
-        Set<Entry<String,List<Double>>> openPositionEntries = stockExchange.getOpenPositions().entrySet();
-        for (Entry<String,List<Double>> entry : openPositionEntries) {
-            Double buyIn = entry.getValue().get(0);
+        List<String> openPositionkeys = new ArrayList<>(stockExchange.getOpenPositions().keySet());
+        for (String key : openPositionkeys) {
+            Double buyIn = stockExchange.getOpenPositions().get(key).get(1);
             if ((price - buyIn)/buyIn >= performanceThreshold) {
-                stockExchange.marketClearPosition(entry.getKey());
+                stockExchange.marketClearPosition(key);
+            } else if ((price - buyIn)/buyIn < 0) {
+                stockExchange.marketClearPosition(key);
             }
         }
     }
 
     public List<Connection> getConnections() {
         return connections;
-    }
-
-    public void addConnection(Connection newConnection) {
-        connections.add(newConnection);
     }
     
     public Double getBuyThreshold() {
@@ -67,5 +74,10 @@ public class TestStrategy implements Strategy {
     public Double getPerformanceThreshold() {
         return performanceThreshold;
     }
-    
+
+    @Override
+    public void addConnection(Connection newConnection) {
+        connections.add(newConnection);
+    }
+
 }

@@ -11,5 +11,6 @@ import com.backt4j.core.Connection;
 public interface Strategy {
 
     public void handleNewPrice(DataPoint dataPoint);
+    public void addConnection(Connection connection);
 
 }

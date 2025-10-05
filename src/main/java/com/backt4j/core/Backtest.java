@@ -96,10 +96,13 @@ public class Backtest {
 
     private Backtest(Strategy tradingStrategy, List<Exchange> tradingExchanges) {
         Connection connection = new Connection(tradingExchanges, tradingStrategy);
+        backtestConnections = new ArrayList<>();
         backtestConnections.add(connection);
+        tradingStrategy.addConnection(connection);
     }
 
     private Backtest(List<Connection> customConnections) {
+        backtestConnections = new ArrayList<>();
         backtestConnections = customConnections;
     }
 
@@ -136,7 +139,7 @@ public class Backtest {
                 }
             }
 
-            // Do all necessary operations that must be finalized before the can be show.
+            // Do all necessary operations that must be finalized before they can be shown.
             handleRunEnd(connection);
 
             List<Exchange> exchangesList = connection.getExchanges();
@@ -146,12 +149,12 @@ public class Backtest {
                 System.out.println("\n");
                 System.out.println("Results of the Backtest");
                 System.out.println("-----------------------");
-                System.out.println("\n");
                 System.out.println("Relative Performance: " + results.getRelPerformance());
                 System.out.println("Absolute Performance: " + results.getAbsPerformance());
                 System.out.println("Max Drawdown: " + results.getMaxDrawdown());
                 System.out.println("Volatility: " + results.getVolatility());
                 System.out.println("\n");
+
             }
 
         }
@@ -160,7 +163,7 @@ public class Backtest {
     private void handleRunEnd(Connection connection) {
         for (Exchange exchange : connection.getExchanges()) {
             Double vol = calculateVolatility(exchange.getPerformanceSeries());
-            results.setVolatility(vol);
+            exchange.getResult().setVolatility(vol);
         }
     }
 
