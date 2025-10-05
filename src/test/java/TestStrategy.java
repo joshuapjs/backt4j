@@ -1,3 +1,5 @@
+import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -14,7 +16,6 @@ public class TestStrategy implements Strategy {
     final Double buyThreshold;
     final Double performanceThreshold;
     final List<Connection> connections;
-    StockExchange exchange;
 
     public TestStrategy(Double buy, Double sell, Connection connection) {
         buyThreshold = buy;
@@ -23,22 +24,30 @@ public class TestStrategy implements Strategy {
         connections.add(connection);
     }
 
+    public TestStrategy(Double buy, Double sell, StockExchange stockExchange) {
+        buyThreshold = buy;
+        performanceThreshold = sell;
+        connections = new ArrayList<>();
+        connections.add(new Connection(stockExchange, this));
+    }
+
     @Override
     public void handleNewPrice(DataPoint dataPoint) {
         PriceDataPoint priceDataPoint = (PriceDataPoint) dataPoint;
         Double price = priceDataPoint.open();
+        StockExchange stockExchange = (StockExchange) connections.get(0).getExchanges().get(0);
         if (price < buyThreshold) {
-            exchange.marketOrder(priceDataPoint.id(), 
+            stockExchange.marketOrder(priceDataPoint.id(), 
                             Double.valueOf(100.0), 
                             priceDataPoint.open(), 
                             priceDataPoint.window_start().getTime());
         }
 
-        Set<Entry<String,List<Double>>> openPositionEntries = exchange.getOpenPositions().entrySet();
+        Set<Entry<String,List<Double>>> openPositionEntries = stockExchange.getOpenPositions().entrySet();
         for (Entry<String,List<Double>> entry : openPositionEntries) {
             Double buyIn = entry.getValue().get(0);
             if ((price - buyIn)/buyIn >= performanceThreshold) {
-                exchange.marketClearPosition(entry.getKey());
+                stockExchange.marketClearPosition(entry.getKey());
             }
         }
     }
@@ -53,10 +62,6 @@ public class TestStrategy implements Strategy {
     
     public Double getBuyThreshold() {
         return buyThreshold;
-    }
-
-    public StockExchange getExchange() {
-        return exchange;
     }
 
     public Double getPerformanceThreshold() {
