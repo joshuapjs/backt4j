@@ -18,7 +18,8 @@ import com.opencsv.CSVReader;
  * <p>A Class for parsing price data for each a Flat Files with time series data for stocks.
  * This class follows the Polygon.io Flat Files data format, with the following header:</p>
  * 
- * <p>ticker volume open close high low window_start transactions</p>
+ * <p>ticker (str) volume (long) open (double) close (double) high (double) low (double) 
+ * window_start (long) transactions (long)</p>
  * 
  * <p>The Data is stored in a HashMap, where we have for each stock a List of DataPoint records.</p>
  * <p>Each DataPoint has a price and a timeStamp in this implementation.</p>
@@ -170,8 +171,8 @@ public class CSVData implements Data {
             this.size = allLines.size() - 1;
         } else {
             if (this.size != allLines.size() - 1) {
-                throw new Exception("Amount of lines in this file does not match with " +
-                "the lines of an already parsed file.");
+                throw new Exception("Amount of lines in a CSV file does not match with " +
+                "the amount of lines that were already parsed.");
             }
         }
 
@@ -192,7 +193,7 @@ public class CSVData implements Data {
     @Override
     public HashMap<String, List<DataPoint>> getValues() throws Exception {
         if (values.isEmpty()) {
-            throw new Exception("No Data assigned. Make sure to call init() before trying to access values.");
+            throw new Exception("No Data was assigned CSVData Object. Make sure to call init() before trying to access values.");
         } else {
             return values;
         }

@@ -1,32 +1,23 @@
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import java.net.URISyntaxException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
+import java.io.File;
 
 import org.junit.jupiter.api.Test;
 
 import com.backt4j.core.Backtest;
-import com.backt4j.core.Connection;
 import com.backt4j.core.StockExchange;
 import com.backt4j.data.CSVData;
+import com.backt4j.strategy.TestStrategy;
 
 public class AppTest {
 
     @Test
-    public void connectionTest() throws URISyntaxException, ParseException {
-    }
-
-    @Test
-    public void backtestTest() throws ParseException, Exception {
-    }
-
+    public void simpleDryRun() throws Exception {
+        File resourcesDirectory = new File("src/test/resources");
+        CSVData csvData = (CSVData) (new CSVData("csv-data-name")).init(resourcesDirectory.getAbsolutePath() + "/testdata.csv");
+        assert csvData.getValues() != null;
+        StockExchange stockExchange = new StockExchange(1_000_000, csvData);
+        TestStrategy testStrategy = new TestStrategy(100.0, 0.01);
+        Backtest backtest = new Backtest.Builder().add(stockExchange).add(testStrategy).build();
+        backtest.run();
+        }
     
 }

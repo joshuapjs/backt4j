@@ -29,7 +29,7 @@ public class Backtest {
     /***
      * an aggregated {@link Result} element, combined of results instances from different {@link Exchange} instances.
      */
-    public Result results;
+    public Result result;
 
     /***
      * {@code Backtest} follows the Builder Pattern to allow for a more readable and at the same time flexible construction of
@@ -62,7 +62,7 @@ public class Backtest {
             return this;
         }
 
-        public Builder jadd(List<Exchange> exchangesList) {
+        public Builder add(List<Exchange> exchangesList) {
             if (exchanges == null) {
                 exchanges = exchangesList;
             } else {
@@ -144,15 +144,15 @@ public class Backtest {
 
             List<Exchange> exchangesList = connection.getExchanges();
             for (Exchange connectionExchange : exchangesList) {
-                results = connectionExchange.getResult();
+                result = connectionExchange.getResult();
 
                 System.out.println("\n");
                 System.out.println("Results of the Backtest");
                 System.out.println("-----------------------");
-                System.out.println("Relative Performance: " + results.getRelPerformance());
-                System.out.println("Absolute Performance: " + results.getAbsPerformance());
-                System.out.println("Max Drawdown: " + results.getMaxDrawdown());
-                System.out.println("Volatility: " + results.getVolatility());
+                System.out.println("Relative Performance: " + result.getRelPerformance());
+                System.out.println("Absolute Performance: " + result.getAbsPerformance());
+                System.out.println("Max Drawdown: " + result.getMaxDrawdown());
+                System.out.println("Volatility: " + result.getVolatility());
                 System.out.println("\n");
 
             }
@@ -189,6 +189,14 @@ public class Backtest {
             sum += value;
         }
         return sum / values.size();
+    }
+
+    public Result getResult() throws Exception {
+        if (result != null) {
+            return this.result;
+        } else {
+            throw new Exception("run() must be called before a result can be returned.");
+        }
     }
 
 }
