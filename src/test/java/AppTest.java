@@ -12,12 +12,13 @@ public class AppTest {
     @Test
     public void simpleDryRun() throws Exception {
         File resourcesDirectory = new File("src/test/resources");
-        CSVData csvData = (CSVData) (new CSVData("csv-data-name")).init(resourcesDirectory.getAbsolutePath() + "/testdata.csv");
+        CSVData csvData = (CSVData) (new CSVData("csv-data-name"))
+                .init(resourcesDirectory.getAbsolutePath() + "/testdata.csv");
         assert csvData.getValues() != null;
         StockExchange stockExchange = new StockExchange(1_000_000, csvData);
-        TestStrategy testStrategy = new TestStrategy(100.0, 0.01);
+        TestStrategy testStrategy = new TestStrategy(1000.0, 0.01);
         Backtest backtest = new Backtest.Builder().add(stockExchange).add(testStrategy).build();
         backtest.run();
-        }
-    
+    }
+
 }

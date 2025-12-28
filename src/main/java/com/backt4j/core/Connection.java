@@ -49,5 +49,5 @@ public class Connection {
     public void setStrategy(Strategy aStrategy) {
         this.strategy = aStrategy;
     }
-    
+
 }

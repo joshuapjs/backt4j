@@ -293,12 +293,10 @@ public class StockExchange extends Exchange {
         ArrayDeque<Transaction> allOrders = openPositions.get(ticker);
         if (allOrders == null) {
             return;
-            // TODO Log that it was tried to clear a Position that does not exist yet.
         }
         for (Transaction t : allOrders) {
             PriceDataPoint currentDataPoint = (PriceDataPoint) currentPrices.get(ticker);
-            marketOrder(ticker, t.amount() * -1, currentDataPoint.open(), // TODO This decision must
-                                                                          // be communicated.
+            marketOrder(ticker, t.amount() * -1, currentDataPoint.open(), 
                     currentDataPoint.window_start().getTime());
         }
     }
@@ -365,7 +363,6 @@ public class StockExchange extends Exchange {
         if (!openPositions.isEmpty()) {
             for (String ticker : openPositions.keySet()) {
                 if (currentPrices.get(ticker) == null) {
-                    // TODO Warning should be logged.
                     continue;
                 }
                 Double currentPrice = ((PriceDataPoint) currentPrices.get(ticker)).open();

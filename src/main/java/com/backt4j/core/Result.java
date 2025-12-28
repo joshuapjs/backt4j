@@ -4,69 +4,66 @@ import java.util.ArrayList;
 import java.util.List;
 
 /***
- * <p>The Results Object stores performance and risk related indicators that should later be displayed via 
- * the {@link Backtest} class.</p>
- * <p>There is not Sharpe Ratio implemented because it can easily be calculated given all other paramenters
- * and it would require a fixed definition of what the Riskfree rate is which is as of today 2025-10-02 not
- * clearly given by the US Treasuries.</p>
- * <p>All the indicators should be recorded by the {@link Exchange} class.</p>
+ * <p>
+ * The Results Object stores performance and risk related indicators that should later be displayed
+ * via the {@link Backtest} class.
+ * </p>
+ * <p>
+ * There is not Sharpe Ratio implemented because it can easily be calculated given all other
+ * paramenters and it would require a fixed definition of what the Riskfree rate is which is as of
+ * today 2025-10-02 not clearly given by the US Treasuries.
+ * </p>
+ * <p>
+ * All the indicators should be recorded by the {@link Exchange} class.
+ * </p>
  */
 public class Result {
 
-    private Double absPerformance;
-    private Double relPerformance;
-    private Double volatility;
-    private Double maxDrawdown;
+    private double absPerformance;
+    private double relPerformance;
+    private double volatility;
+    private double maxDrawdown;
     private List<Double> performanceSeries;
 
     /***
-     * If values are not specified initially they can be set by the setter methods.
-     * At the same time missing values will still be displayed in a reasonable way.
+     * If values are not specified initially they can be set by the setter methods. At the same time
+     * missing values will still be displayed in a reasonable way.
      */
-    public Result() {}
+    public Result() {
+        performanceSeries = new ArrayList<>();
+    }
 
-    public Result(Double absPerformanceDouble, 
-                    Double relPerformanceDouble,
-                    Double volatilityDouble, 
-                    Double biggestLossDouble,
-                    List<Double> series
-                    ) {
-
-                        absPerformance = absPerformanceDouble;
-                        relPerformance = absPerformanceDouble;
-                        volatility = volatilityDouble;
-                        maxDrawdown = biggestLossDouble;
-                        performanceSeries = series;
-
+    public Result(Double absPerformanceDouble, double relPerformanceDouble, double volatilityDouble,
+            double biggestLossDouble, List<Double> series) {
+        absPerformance = absPerformanceDouble;
+        relPerformance = absPerformanceDouble;
+        volatility = volatilityDouble;
+        maxDrawdown = biggestLossDouble;
+        performanceSeries = series;
     }
 
     public static Result merge(Result first, Result second) {
 
         Result outputResult = new Result();
-        outputResult.setAbsPerformance(
-            first.getAbsPerformance() + second.getAbsPerformance()
-        );
+        outputResult.setAbsPerformance(first.getAbsPerformance() + second.getAbsPerformance());
 
         List<Double> aggregateSeries = new ArrayList<>();
         List<Double> firstSeries = new ArrayList<>();
         List<Double> secondSeries = new ArrayList<>();
-        for (int i=0; i<(first.getPerformanceSeries().size()-1); i++) {
+        for (int i = 0; i < (first.getPerformanceSeries().size() - 1); i++) {
             aggregateSeries.add(i, firstSeries.get(i) + secondSeries.get(i));
         }
         outputResult.setVolatility(Backtest.calculateVolatility(aggregateSeries));
 
         outputResult.setRelPerformance(
-            // Divide the sum of both absolute performances
-            (first.getAbsPerformance() + second.getAbsPerformance()) /
-            // By the sum of both bases, retrieved via the quotient of absolute Performance and 
-            // the relative performance. 
-            ((first.getAbsPerformance() / first.getRelPerformance()) + 
-            (second.getAbsPerformance() / second.getRelPerformance()))
-        );
+                // Divide the sum of both absolute performances
+                (first.getAbsPerformance() + second.getAbsPerformance()) /
+                // By the sum of both bases, retrieved via the quotient of absolute Performance and
+                // the relative performance.
+                        ((first.getAbsPerformance() / first.getRelPerformance())
+                                + (second.getAbsPerformance() / second.getRelPerformance())));
 
-        outputResult.setMaxDrawdown(
-            Math.max(first.getMaxDrawdown(), second.getMaxDrawdown())
-        );
+        outputResult.setMaxDrawdown(Math.max(first.getMaxDrawdown(), second.getMaxDrawdown()));
         outputResult.setPerformanceSeries(aggregateSeries);
 
         return outputResult;

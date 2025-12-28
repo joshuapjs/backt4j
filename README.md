@@ -12,7 +12,7 @@ Backtest backtest = new Backtest.Builder()
         .add(new StockExchange(
             1_000_000, 
             priceData))
-        .add(new TestStrategy(100.0, 0.05))
+        .add(new TestStrategy(1000.0, 0.01))
         .build();
 
 backtest.run();

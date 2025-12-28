@@ -90,5 +90,4 @@ public class StockExchangeTest {
                 assertEquals(stockExchange.getOpenPositionAmounts().get("AAPL"), 0);
         }
 
-        // TODO Maybe Add a stress test that also checks the memory efficiency.
 }
